@@ -1,8 +1,11 @@
 #!/usr/bin/python3
 
+import kombu
 import importlib
+import os.path
 import re
 import socketserver
+import yaml
 
 log_re = re.compile(r'^(<(?P<priority>\d+)>)?'
                     r'(?P<timestamp>\w{3}\s+\d+\s+\d{2}:\d{2}:\d{2})\s+'
@@ -40,8 +43,8 @@ class PagerHandler(socketserver.BaseRequestHandler):
             for parser in self.server.parsers:
                 result = parser.parse(entry)
                 if result is not None:
-                    print(result)
-                    break
+                    self.server.pager_queue.put(result)
+                    return
 
 
 def load_parsers(modules):
@@ -56,8 +59,17 @@ def load_parsers(modules):
 
 
 if __name__ == '__main__':
+    try:
+        import xdg.BaseDirectory
+        configpath = xdg.BaseDirectory.load_first_config('notilog/config.yml')
+    except:
+        configpath = os.path.expanduser('~/.config/notilog/config.yml')
+    config = yaml.safe_load(open(configpath))
+
     s = socketserver.UDPServer(('localhost', 6514), PagerHandler)
     s.parsers = load_parsers(['dovecot.DovecotImapLoginParser',
                               'dovecot.DovecotErrorParser',
                               'sshd.SshdLoginParser'])
+    conn = kombu.Connection(config['broker'], ssl=config['broker_tls'])
+    s.pager_queue = conn.SimpleQueue(config['queue'])
     s.serve_forever()
