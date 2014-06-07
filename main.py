@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import importlib
 import re
 import socketserver
 
@@ -35,40 +36,28 @@ class PagerHandler(socketserver.BaseRequestHandler):
     def handle(self):
         data = self.request[0].strip().decode('utf-8')
         entry = LogEntry(data)
+        if entry.tag is not None:
+            for parser in self.server.parsers:
+                result = parser.parse(entry)
+                if result is not None:
+                    print(result)
+                    break
 
-        kv_re = re.compile(r'([A-Za-z0-9]+)=([^,]+),')
 
-        if entry.tag is None:
-            pass
-        elif entry.tag == "sudo":
-            # TODO: combine multiple entries into one alert sent periodically
-            pass
-        elif entry.tag[0:4] == "sshd" and entry.content[0:8] == "Accepted":
-            ssh_re = re.compile(
-                r'^Accepted (?P<method>[\w\-/]+) for (?P<user>\w+) from '
-                r'(?P<ip>[0-9a-f:\.]+) port (?P<port>\d+) (?P<protocol>\w+)')
-            m = ssh_re.match(entry.content)
+def load_parsers(modules):
+    parsers = []
+    for item in modules:
+        components = ['parsers'] + item.split('.')
+        path = '.'.join(components[:-1])
+        module = importlib.import_module(path)
+        class_ = getattr(module, components[-1])
+        parsers.append(class_())
+    return parsers
 
-            attrs = m.groupdict()
-            print("ssh login for {user} from {ip} using {method}".format(
-                **attrs))
-        elif entry.tag == "dovecot" and \
-                entry.content[0:18] == "imap-login: Login:":
-            m = kv_re.findall(entry.content)
-
-            attrs = dict(m)
-            attrs['user'] = attrs['user'].strip('<>')
-            print("dovecot imap login for {user} from {rip}".format(**attrs))
-        elif entry.tag == "dovecot" and \
-                "command startup failed" in entry.content:
-            # TODO: combine multiple entries into one alert sent periodically
-            failed_re = re.compile(r'service\((?P<service>[\w\-/]+)\)')
-            m = failed_re.search(entry.content)
-
-            service = m.group('service')
-            print("dovecot command startup failed for service {}".format(
-                service))
 
 if __name__ == '__main__':
     s = socketserver.UDPServer(('localhost', 6514), PagerHandler)
+    s.parsers = load_parsers(['dovecot.DovecotImapLoginParser',
+                              'dovecot.DovecotErrorParser',
+                              'sshd.SshdLoginParser'])
     s.serve_forever()
