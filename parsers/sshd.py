@@ -11,5 +11,5 @@ class SshdLoginParser(Parser):
             m = ssh_re.match(entry.content)
 
             attrs = m.groupdict()
-            return "SSH login for {user} from {ip} using {method}".format(
-                **attrs)
+            return "{hostname}: SSH login for {user} from {ip} using "\
+                "{method}".format(hostname=entry.hostname, **attrs)

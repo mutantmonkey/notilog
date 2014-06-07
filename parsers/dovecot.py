@@ -10,7 +10,8 @@ class DovecotImapLoginParser(Parser):
 
             attrs = dict(m)
             attrs['user'] = attrs['user'].strip('<>')
-            return "Dovecot IMAP login for {user} from {rip}".format(**attrs)
+            return "{hostname}: Dovecot IMAP login for {user} from {rip}".\
+                format(hostname=entry.hostname, **attrs)
 
 
 class DovecotErrorParser(Parser):
@@ -22,5 +23,5 @@ class DovecotErrorParser(Parser):
             m = failed_re.search(entry.content)
 
             service = m.group('service')
-            return "Dovecot command startup failed for service {}".format(
-                service)
+            return "{hostname}: Dovecot command startup failed for service "\
+                "{service}".format(hostname=entry.hostname, service=service)
