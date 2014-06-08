@@ -57,8 +57,7 @@ class PagerSyslogServer(socketserver.UDPServer):
 
     def errback(self, exc, interval):
         logger.error("{exc}; retry in {interval} seconds".format(
-            exc=exc,
-            interval=interval))
+            exc=exc, interval=interval))
 
     def load_parsers(self, modules):
         self.parsers = []
@@ -88,7 +87,6 @@ class PagerHandler(socketserver.BaseRequestHandler):
                             routing_key=self.server.queue_name,
                             declare=[self.server.pager_queue])
                     return
-
 
 
 if __name__ == '__main__':
