@@ -1,4 +1,3 @@
 ---
 broker: amqp://hackme:hackme@example.com/pager
-broker_tls: off
 queue: pager
