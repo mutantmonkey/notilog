@@ -1,3 +1,7 @@
 ---
 broker: amqp://hackme:hackme@example.com/pager
 queue: pager
+parsers:
+- dovecot.DovecotImapLoginParser
+- dovecot.DovecotErrorParser
+- sshd.SshdLoginParser

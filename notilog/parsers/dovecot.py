@@ -1,5 +1,5 @@
 import re
-from parsers.base import Parser
+from .base import Parser
 
 
 class DovecotImapLoginParser(Parser):

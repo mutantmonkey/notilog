@@ -1,4 +1,4 @@
-from base import Parser
+from .base import Parser
 
 
 class SudoParser(Parser):
