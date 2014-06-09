@@ -1,6 +1,8 @@
 ---
 broker: amqp://hackme:hackme@example.com/pager
 queue: pager
+syslog_host: localhost
+syslog_port: 6514
 parsers:
 - dovecot.DovecotImapLoginParser
 - dovecot.DovecotErrorParser

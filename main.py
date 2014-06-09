@@ -12,7 +12,7 @@ if __name__ == '__main__':
         configpath = os.path.expanduser('~/.config/notilog/config.yml')
     config = yaml.safe_load(open(configpath))
 
-    s = server.PagerSyslogServer(config, ('localhost', 6514))
+    s = server.PagerSyslogServer(config)
     try:
         s.serve_forever()
     except KeyboardInterrupt:

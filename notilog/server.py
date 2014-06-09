@@ -1,6 +1,7 @@
 import importlib
 import kombu
 import logging
+import socket
 import socketserver
 from notilog import parsers
 from notilog.logentry import LogEntry
@@ -9,13 +10,33 @@ logger = logging.getLogger(__name__)
 
 
 class PagerSyslogServer(socketserver.UDPServer):
-    def __init__(self, config, server_address, *args,
+    def __init__(self, config, *args,
                  **kwargs):
         self.queue_name = config['queue']
         self.init_broker(config['broker'])
         self.load_parsers(config['parsers'])
 
-        super().__init__(server_address, PagerHandler, *args, **kwargs)
+        # default to localhost if no host specified
+        if 'syslog_host' in config:
+            host = config['syslog_host'].strip()
+        else:
+            host = "localhost"
+
+        # accept only valid ports, or default to port 6514
+        if 'syslog_port' in config:
+            port = int(config['syslog_port'])
+            if port < 1 or port > 65535:
+                port = 6514
+        else:
+            port = 6514
+
+        # default to IPv6 but allow legacy protocols to be enabled
+        if 'syslog_ipv6' in config and config['syslog_ipv6'] == False:
+            self.address_family = socket.AF_INET
+        else:
+            self.address_family = socket.AF_INET6
+
+        super().__init__((host, port), PagerHandler, *args, **kwargs)
 
     def init_broker(self, broker_uri):
         self.broker_conn = kombu.Connection(broker_uri)
