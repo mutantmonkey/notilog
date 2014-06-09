@@ -10,5 +10,5 @@ setup(
     author="mutantmonkey",
     author_email="notilog@mutantmonkey.in",
     url="https://github.com/mutantmonkey/notilog",
-    install_requires=["amqp>=1.4.5", "kombu>=3.0.16", "PyYAML>3.11"]
+    install_requires=["amqp>=1.4.5", "kombu>=3.0.16", "PyYAML>=3.11"]
 )
