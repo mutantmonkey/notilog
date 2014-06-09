@@ -1,5 +1,6 @@
 ---
 broker: amqp://hackme:hackme@example.com/pager
+broker_ssl: off
 queue: pager
 syslog_host: localhost
 syslog_port: 6514

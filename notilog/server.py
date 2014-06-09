@@ -4,6 +4,7 @@ import logging
 import socket
 import socketserver
 from notilog import parsers
+from notilog import safessl
 from notilog.logentry import LogEntry
 
 logger = logging.getLogger(__name__)
@@ -13,7 +14,7 @@ class PagerSyslogServer(socketserver.UDPServer):
     def __init__(self, config, *args,
                  **kwargs):
         self.queue_name = config['queue']
-        self.init_broker(config['broker'])
+        self.init_broker(config['broker'], config['broker_ssl'])
         self.load_parsers(config['parsers'])
 
         # default to localhost if no host specified
@@ -38,8 +39,8 @@ class PagerSyslogServer(socketserver.UDPServer):
 
         super().__init__((host, port), PagerHandler, *args, **kwargs)
 
-    def init_broker(self, broker_uri):
-        self.broker_conn = kombu.Connection(broker_uri)
+    def init_broker(self, broker_uri, broker_ssl):
+        self.broker_conn = kombu.Connection(broker_uri, ssl=broker_ssl)
         self.broker_conn.ensure_connection(errback=self.errback)
 
         # use queue_name as queue, exchange, and routing key to match
