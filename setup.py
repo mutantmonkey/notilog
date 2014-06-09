@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="notilog",
-    packages=["notilog"],
+    packages=["notilog", "notilog.parsers"],
     scripts=["notilog-server"],
     version="1.0",
     description="notilog lets you know about naughty things that happen in your logs.",
