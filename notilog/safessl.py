@@ -10,6 +10,7 @@
 import ssl
 from amqp.transport import SSLTransport
 
+
 def ssl_setup_transport(self):
     """Wrap the socket in an SSL object with sensible defaults and hostname
     checking."""
